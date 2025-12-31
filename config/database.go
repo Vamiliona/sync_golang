@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"gorm.io/driver/mysql"
@@ -14,25 +13,18 @@ var DB *gorm.DB
 func ConnectDB() {
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		getEnv("DB_USER", "root"),
-		getEnv("DB_PASS", ""),
-		getEnv("DB_HOST", "127.0.0.1"),
-		getEnv("DB_PORT", "3306"),
-		getEnv("DB_NAME", "sync_golang"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASS"),
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_NAME"),
 	)
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("❌ DB connection failed:", err)
+		panic("❌ DB connection failed: " + err.Error())
 	}
 
 	DB = db
-	log.Println("✅ Database connected")
-}
-
-func getEnv(key, fallback string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
-	}
-	return fallback
+	fmt.Println("✅ Database connected")
 }
