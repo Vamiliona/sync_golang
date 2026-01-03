@@ -11,13 +11,20 @@ import (
 var DB *gorm.DB
 
 func ConnectDB() {
+	host := os.Getenv("MYSQLHOST")
+	port := os.Getenv("MYSQLPORT")
+	user := os.Getenv("MYSQLUSER")
+	pass := os.Getenv("MYSQLPASSWORD")
+	name := os.Getenv("MYSQLDATABASE")
+
+	fmt.Println("MYSQLHOST:", host)
+	fmt.Println("MYSQLPORT:", port)
+	fmt.Println("MYSQLUSER:", user)
+	fmt.Println("MYSQLDATABASE:", name)
+
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		os.Getenv("MYSQL_USER"),
-		os.Getenv("MYSQL_PASSWORD"),
-		os.Getenv("MYSQL_HOST"),
-		os.Getenv("MYSQL_PORT"),
-		os.Getenv("MYSQL_DATABASE"),
+		user, pass, host, port, name,
 	)
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
