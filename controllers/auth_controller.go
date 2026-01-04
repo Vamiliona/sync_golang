@@ -17,10 +17,11 @@ import (
 // ================= REGISTER =================
 func Register(c *gin.Context) {
 	var input struct {
-		Name     string
-		Email    string
-		Password string
+		Name     string `json:"name"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
+
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
@@ -39,8 +40,29 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Register success"})
+	// ===============================
+	// GENERATE REFRESH TOKEN
+	// ===============================
+	b := make([]byte, 32)
+	rand.Read(b)
+	refreshToken := hex.EncodeToString(b)
+
+	config.DB.Create(&models.RefreshToken{
+		UserID:    user.ID,
+		Token:     refreshToken,
+		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
+	})
+
+	// ===============================
+	// RESPONSE TOKEN (AUTO LOGIN)
+	// ===============================
+	c.JSON(http.StatusOK, gin.H{
+		"message":        "Register success",
+		"access_token":  utils.CreateAccessToken(user),
+		"refresh_token": refreshToken,
+	})
 }
+
 
 // ================= LOGIN =================
 func Login(c *gin.Context) {
